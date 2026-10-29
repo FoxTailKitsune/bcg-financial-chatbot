@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Financial Analysis ChatBot</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f4f7f6; display: flex; justify-content: center; margin-top: 50px; }
+        #chat-container { width: 400px; background: white; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); overflow: hidden; }
+        #chat-header { background: #0056b3; color: white; padding: 15px; text-align: center; font-weight: bold; }
+        #chat-box { height: 400px; padding: 15px; overflow-y: auto; display: flex; flex-direction: column; gap: 10px; background: #fafafa; }
+        .message { padding: 10px 14px; border-radius: 20px; max-width: 80%; line-height: 1.4; font-size: 14px; }
+        .user-msg { background: #0056b3; color: white; align-self: flex-end; border-bottom-right-radius: 2px; }
+        .bot-msg { background: #e9ecef; color: #333; align-self: flex-start; border-bottom-left-radius: 2px; }
+        #input-area { display: flex; padding: 10px; border-top: 1px solid #ddd; background: white; }
+        #user-input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 20px; outline: none; }
+        #send-btn { background: #0056b3; color: white; border: none; padding: 10px 15px; margin-left: 10px; border-radius: 20px; cursor: pointer; }
+        #send-btn:hover { background: #004494; }
+    </style>
+</head>
+<body>
+
+<div id="chat-container">
+    <div id="chat-header">BCG Financial Bot</div>
+    <div id="chat-box">
+        <div class="message bot-msg">Hello! Ask me about the financial performance of Apple, Microsoft, or Tesla (2023-2025).</div>
+    </div>
+    <div id="input-area">
+        <input type="text" id="user-input" placeholder="Type your question..." onkeypress="handleKeyPress(event)">
+        <button id="send-btn" onclick="sendMessage()">Send</button>
+    </div>
+</div>
+
+<script>
+    function handleKeyPress(event) {
+        if (event.key === "Enter") { sendMessage(); }
+    }
+
+    async function sendMessage() {
+        const inputField = document.getElementById("user-input");
+        const message = inputField.value.trim();
+        if (!message) return;
+
+        // 1. Display User Message
+        addMessageToChat(message, "user-msg");
+        inputField.value = ""; // Clear input
+
+        try {
+            // 2. Send Message to Flask Backend
+            const response = await fetch("/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ message: message })
+            });
+
+            const data = await response.json();
+
+            // 3. Display Bot Response
+            addMessageToChat(data.response, "bot-msg");
+
+        } catch (error) {
+            addMessageToChat("Error connecting to the server.", "bot-msg");
+            console.error("Error:", error);
+        }
+    }
+
+    function addMessageToChat(text, className) {
+        const chatBox = document.getElementById("chat-box");
+        const msgDiv = document.createElement("div");
+        msgDiv.className = "message " + className;
+        msgDiv.innerText = text;
+        chatBox.appendChild(msgDiv);
+        chatBox.scrollTop = chatBox.scrollHeight; // Auto-scroll to bottom
+    }
+</script>
+
+</body>
+</html>
